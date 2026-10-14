@@ -1,0 +1,9 @@
+object MainForm: TMainForm
+  Left = 100
+  Height = 940
+  Top = 60
+  Width = 1500
+  Caption = 'Fluff Silo System Simulator'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+end
