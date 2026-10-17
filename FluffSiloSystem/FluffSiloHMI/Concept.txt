@@ -1,0 +1,45 @@
+Fluff Silo System
+มีความสามารถกำหนดเงื่อนไขการทำงาน Paddle 1,2,3 สลับทำงานหยุดไปมาพร้อมหน่วงเวลาได้เรียกว่าระบบ "Paddle Patterns"
+มีสัญญาณร้องขอเพื่อต้องการเติมวัตถุดิบ เรียกว่า "External Request"
+อุปกรณ์หลักทำให้ระบบเคลื่อนที่ทั้งหมดมี 5 ชิ้น
+อุปกรณ์ที่ 1. Blower01
+อุปกรณ์ที่ 2. Screw01
+อุปกรณ์ที่ 3. Paddle01
+อุปกรณ์ที่ 4. Paddle02
+อุปกรณ์ที่ 5. Paddle03
+ใน 1 อุปกรณ์มี 9 คุณสมบัติ
+คุณสมบัติที่ 1. Auto Start (Level1)
+คุณสมบัติที่ 2. Auto Stop (Level2)
+คุณสมบัติที่ 3. Interlock (Level2)
+คุณสมบัติที่ 4. Manual Start (Level3)
+คุณสมบัติที่ 5. Manual Stop (Level4)
+คุณสมบัติที่ 6. Enable (Level5)
+คุณสมบัติที่ 7. Disable (Level5)
+คุณสมบัติที่ 8. Fault (Level6)
+คุณสมบัติที่ 9. E-Stop(Level6)
+level สูงกว่าย่อมมีสิทธิ์ควบคุมเหนือกว่า
+การทำงานของ Auto Start:
+  เมื่อกดปุ่ม Auto Start Blower01 จะทำงาน หลังจาก 7 วินาที ถ้ามีสัญญาณ "External Request" ตัว Screw01 จะทำงาน หลังจาก 3 วินาที "Paddle Patterns" เริ่มทำงาน
+  เมือไม่มีสัญญาณ "External Request" ระบบ "Paddle Patterns" หยุดทำงานทันที หลังจาก 3 วินาที ตัว Screw01 จะหยุด
+  เมือมีสัญญาณ "External Request" ในขณะอยู่ mode Auto Start ตัว Screw01 จะทำงานหลังจากการร้องขอนานเกิน 3 วินาที หลังจาก Screw01 ทำงาน 3 วินาที "Paddle Patterns" เริ่มทำงาน
+  เมื่อเกิดเหตุการ Blower01 หยุดทำงาน Screw01, ระบบ "Paddle Patterns" หยุดทำงานทันที
+  เมื่อเกิดเหตุการ Screw01 หยุดทำงาน ระบบ "Paddle Patterns" หยุดทำงานทันที หลังจาก 5 วินาที Blower01 หยุดทำงาน
+  เมื่อเกิดเหตุการ Padden ตัวไดตัวหนึ่งหยุดทำงาน Padden ตัวถัดไปทำงานต่อ ตาม "Paddle Patterns" กำหนด
+การทำงานของ Auto Stop:
+  เมื่อกดปุ่ม Auto Stop "Paddle Patterns"และ Screw01 หยุดทำงานทันที หลังจาก 5 วินาที Blower01 จะหยุดทำงาน
+  เมือมีสัญญาณ "External Request" ในขณะอยู่ mode Auto Stop ระบบ Auto จะไม่สั่งการไดๆ
+
+ที่ตัว Software:
+มี Over View
+สร้าง Panel ควบคุมรวม (Auto Start, Auto Stop, E-stop)
+สร้าง Panel "External Request"
+สร้าง Popup Panel ควบคุมย่อย และ Properties แต่ละอุปกรณ์
+สามารถดู Popup Chart ของแต่ละ Properties ได้
+อุปกรณ์สีเขียว = Auto Start
+อุปกรณ์สีเทาอ่อน = (Auto Stop หรือ Interlock หรือ E-Stop) โดยทั้งที่ Enable
+อุปกรณ์สีเขียวคาดส้ม = Manual Start
+อุปกรณ์สีเทาอ่อนคาดส้ม = Manual Stop
+อุปกรณ์สีเทาเข้ม = Disable
+อุปกรณ์สีแดง = Fault
+มองเห็นเวลาทำงาน, การหน่วงเวลา
+เหตุการณ์ทุกเหตุการ์สามารถมองเห็นและจับลากลง Chart เพื่อดู History ได้
