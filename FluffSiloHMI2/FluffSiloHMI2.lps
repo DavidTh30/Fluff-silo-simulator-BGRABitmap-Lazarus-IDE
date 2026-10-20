@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="12"/>
+    <BuildModes Active="Release"/>
+    <Units>
+      <Unit>
+        <Filename Value="FluffSiloHMI2.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="umain.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="MainForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uMain"/>
+        <IsVisibleTab Value="True"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="usim.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uSim"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="udraw.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uDraw"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uwidgets.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uWidgets"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uchartform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uChartForm"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="udeviceform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uDeviceForm"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="umodbus.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uModbus"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="us7.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uS7"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uplclink.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uPlcLink"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uhwconfigform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uHwConfigForm"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="upatternform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uPatternForm"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="ueventsform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uEventsForm"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="ulog.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uLog"/>
+        <UsageCount Value="20"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="-1"/>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
