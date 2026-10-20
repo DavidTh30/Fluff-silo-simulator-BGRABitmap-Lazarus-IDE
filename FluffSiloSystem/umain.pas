@@ -29,7 +29,9 @@ type
     LblSim: TLabel;
     GridPat: TStringGrid;
     SpinDelay: array[0..5] of TFloatSpinEdit;
-    CmbSpeed: TComboBox;
+    SegSpeed: TSimSegment;
+    FNextTop: Integer;
+    FLastGridKey: string;
     LstEvents, LstSignals: TListBox;
     ChkAutoScroll: TCheckBox;
     Timer: TTimer;
@@ -140,13 +142,16 @@ end;
 function TMainForm.MakeGroup(AParent: TWinControl; const ACaption: string; AHeight: Integer): TGroupBox;
 begin
   Result := TGroupBox.Create(Self);
-  Result.Top := 100000;   { append at the bottom }
+  { append at the bottom: alTop controls are ordered by Top, so it must grow }
+  Inc(FNextTop, 10000);
+  Result.Top := FNextTop;
   Result.Parent := AParent;
   Result.Align := alTop;
   Result.Height := AHeight;
   Result.Caption := ' ' + ACaption + ' ';
   Result.Font.Style := [fsBold];
   Result.BorderSpacing.Around := 4;
+  Result.DoubleBuffered := True;
 end;
 
 procedure TMainForm.BuildUI;
@@ -163,8 +168,8 @@ var
   gEv, gSig: TGroupBox;
 begin
   Caption := 'Fluff Silo System Simulator (BGRABitmap)';
-  Width := 1500;
-  Height := 940;
+  Width := Min(1500, Screen.WorkAreaWidth);
+  Height := Min(940, Screen.WorkAreaHeight - 30);
   Position := poScreenCenter;
   KeyPreview := True;
 
@@ -175,6 +180,9 @@ begin
   FRight.Width := 470;
   FRight.HorzScrollBar.Visible := False;
   FRight.VertScrollBar.Tracking := True;
+  { the BGRABitmap widgets repaint often: paint the panel off-screen first (no flicker) }
+  DoubleBuffered := True;
+  FRight.DoubleBuffered := True;
 
   { main control panel }
   g := MakeGroup(FRight, 'Main Control Panel', 160);
@@ -314,18 +322,17 @@ begin
   l.SetBounds(12, 10, 100, 20);
   l.Caption := 'Speed';
   l.Font.Style := [];
-  CmbSpeed := TComboBox.Create(Self);
-  CmbSpeed.Parent := g;
-  CmbSpeed.SetBounds(70, 6, 90, 24);
-  CmbSpeed.Style := csDropDownList;
-  CmbSpeed.Font.Style := [];
-  CmbSpeed.Items.CommaText := 'x1,x2,x5,x10';
-  CmbSpeed.ItemIndex := 0;
-  CmbSpeed.OnChange := @SpeedChange;
+  SegSpeed := TSimSegment.Create(Self);
+  SegSpeed.Parent := g;
+  SegSpeed.SetBounds(60, 5, 170, 26);
+  SegSpeed.AccentColor := $00309030;
+  SegSpeed.Items.CommaText := 'x1,x2,x5,x10';
+  SegSpeed.ItemIndex := 0;
+  SegSpeed.OnChange := @SpeedChange;
   l := TLabel.Create(Self);
   l.Parent := g;
-  l.SetBounds(175, 10, 280, 20);
-  l.Caption := 'Click a device in the overview to open its panel';
+  l.SetBounds(242, 10, 200, 20);
+  l.Caption := 'Click a device to open its panel';
   l.Font.Style := [];
   l.Font.Color := clGrayText;
 
@@ -404,6 +411,8 @@ procedure TMainForm.TimerTick(Sender: TObject);
 var
   now: QWord;
   dt, d: Double;
+  key: string;
+  i: Integer;
 begin
   now := GetTickCount64;
   dt := (now - FLastTick) / 1000;
@@ -436,7 +445,6 @@ begin
     BtnReq.Caption := 'EXTERNAL REQUEST : OFF';
     BtnReq.SubText := 'click to request material';
   end;
-  BtnReq.Invalidate;
   LblSim.Caption := Format('Sim time %s   speed x%g   events %d',
     [FmtTime(Sim.Time), FSpeed, Sim.EventCount]);
 
@@ -449,9 +457,17 @@ begin
       LstEvents.TopIndex := LstEvents.Items.Count - 1;
   end;
 
-  if Length(Sim.Pattern) + 1 <> GridPat.RowCount then
+  { repaint the pattern grid only when something in it changed (no flicker) }
+  key := Format('%d|%d|', [Ord(Sim.PatternActive), Sim.PatStep]);
+  for i := 0 to High(Sim.Pattern) do
+    key := key + Format('%d%d%d:%.1f;', [Ord(Sim.Pattern[i].P[0]), Ord(Sim.Pattern[i].P[1]),
+      Ord(Sim.Pattern[i].P[2]), Sim.Pattern[i].Duration]);
+  if (key <> FLastGridKey) and not GridPat.EditorMode then
+  begin
+    FLastGridKey := key;
     FillGrid;
-  GridPat.Invalidate;
+    GridPat.Invalidate;
+  end;
   FOverview.Invalidate;
   RefreshDeviceForms;
   RefreshCharts;
@@ -572,8 +588,8 @@ procedure TMainForm.SpeedChange(Sender: TObject);
 const
   SP: array[0..3] of Double = (1, 2, 5, 10);
 begin
-  if CmbSpeed.ItemIndex >= 0 then
-    FSpeed := SP[CmbSpeed.ItemIndex];
+  if SegSpeed.ItemIndex >= 0 then
+    FSpeed := SP[SegSpeed.ItemIndex];
 end;
 
 procedure TMainForm.DelayChange(Sender: TObject);
