@@ -253,6 +253,9 @@ class Server(socketserver.ThreadingTCPServer):
 S7_DB = 10
 S7_DB_SIZE = 100
 MERKERS = bytearray(256)
+INPUTS = bytearray(64)     # %I  (written by the FluffSilo Client Panel)
+OUTPUTS = bytearray(64)    # %Q  (read by the Client Panel; write with --log to watch)
+AREA_MEM = {0x81: INPUTS, 0x82: OUTPUTS, 0x83: MERKERS}
 
 
 def _bit_coil(byte, bit):
@@ -366,7 +369,7 @@ class S7Handler(socketserver.BaseRequestHandler):
                     ts, n, db, area = it[3], struct.unpack(">H", it[4:6])[0], struct.unpack(">H", it[6:8])[0], it[8]
                     addr = int.from_bytes(it[9:12], "big")
                     start, bit = addr >> 3, addr & 7
-                    mem = db_image() if (area == 0x84 and db == S7_DB) else MERKERS if area == 0x83 else None
+                    mem = db_image() if (area == 0x84 and db == S7_DB) else AREA_MEM.get(area)
                     if LOG:
                         print(f"S7  READ  area={area:02x} db={db} start={start} n={n}", flush=True)
                     if mem is None:
@@ -401,11 +404,12 @@ class S7Handler(socketserver.BaseRequestHandler):
                         else:
                             db_store(start, val)
                         res += b"\xFF"
-                    elif area == 0x83:
+                    elif area in AREA_MEM and start + len(val) <= len(AREA_MEM[area]):
+                        mem = AREA_MEM[area]
                         if ts == 1:
-                            MERKERS[start] = (MERKERS[start] & ~(1 << bit)) | ((val[0] & 1) << bit)
+                            mem[start] = (mem[start] & ~(1 << bit)) | ((val[0] & 1) << bit)
                         else:
-                            MERKERS[start:start + len(val)] = val
+                            mem[start:start + len(val)] = val
                         res += b"\xFF"
                     else:
                         res += b"\x0A"

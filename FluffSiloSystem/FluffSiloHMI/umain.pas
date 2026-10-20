@@ -28,14 +28,15 @@ type
     FBottom: TPanel;
     BtnAutoStart, BtnAutoStop, BtnEStop, BtnReset, BtnReq: TSimButton;
     BtnConnect: TSimButton;
-    CmbSource: TComboBox;
+    SegSource: TSimSegment;
+    FLastGridKey: string;
     LblPlc: TLabel;
     FUpdatingUI: Boolean;
     FNextTop: Integer;
     LblSim: TLabel;
     GridPat: TStringGrid;
     SpinDelay: array[0..5] of TFloatSpinEdit;
-    CmbSpeed: TComboBox;
+    SegSpeed: TSimSegment;
     LstEvents, LstSignals: TListBox;
     ChkAutoScroll: TCheckBox;
     Timer: TTimer;
@@ -169,6 +170,7 @@ begin
   Result.Caption := ' ' + ACaption + ' ';
   Result.Font.Style := [fsBold];
   Result.BorderSpacing.Around := 4;
+  Result.DoubleBuffered := True;
 end;
 
 procedure TMainForm.BuildUI;
@@ -197,6 +199,9 @@ begin
   FRight.Width := 470;
   FRight.HorzScrollBar.Visible := False;
   FRight.VertScrollBar.Tracking := True;
+  { the BGRABitmap widgets repaint often: paint the panel off-screen first (no flicker) }
+  DoubleBuffered := True;
+  FRight.DoubleBuffered := True;
 
   { PLC connection / data source }
   g := MakeGroup(FRight, 'PLC Connection', 128);
@@ -205,15 +210,13 @@ begin
   l.SetBounds(12, 10, 90, 20);
   l.Caption := 'Data source';
   l.Font.Style := [];
-  CmbSource := TComboBox.Create(Self);
-  CmbSource.Parent := g;
-  CmbSource.SetBounds(100, 6, 200, 26);
-  CmbSource.Style := csDropDownList;
-  CmbSource.Font.Style := [];
-  CmbSource.Items.Add('Simulation (offline)');
-  CmbSource.Items.Add('PLC (Modbus TCP / S7)');
-  CmbSource.ItemIndex := 0;
-  CmbSource.OnChange := @SourceChange;
+  SegSource := TSimSegment.Create(Self);
+  SegSource.Parent := g;
+  SegSource.SetBounds(100, 5, 200, 28);
+  SegSource.Items.Add('SIMULATION');
+  SegSource.Items.Add('PLC');
+  SegSource.ItemIndex := 0;
+  SegSource.OnChange := @SourceChange;
   b := TButton.Create(Self);
   b.Parent := g;
   b.SetBounds(310, 4, 120, 30);
@@ -372,18 +375,17 @@ begin
   l.SetBounds(12, 10, 100, 20);
   l.Caption := 'Speed';
   l.Font.Style := [];
-  CmbSpeed := TComboBox.Create(Self);
-  CmbSpeed.Parent := g;
-  CmbSpeed.SetBounds(70, 6, 90, 24);
-  CmbSpeed.Style := csDropDownList;
-  CmbSpeed.Font.Style := [];
-  CmbSpeed.Items.CommaText := 'x1,x2,x5,x10';
-  CmbSpeed.ItemIndex := 0;
-  CmbSpeed.OnChange := @SpeedChange;
+  SegSpeed := TSimSegment.Create(Self);
+  SegSpeed.Parent := g;
+  SegSpeed.SetBounds(60, 5, 170, 26);
+  SegSpeed.AccentColor := $00309030;
+  SegSpeed.Items.CommaText := 'x1,x2,x5,x10';
+  SegSpeed.ItemIndex := 0;
+  SegSpeed.OnChange := @SpeedChange;
   l := TLabel.Create(Self);
   l.Parent := g;
-  l.SetBounds(175, 10, 280, 20);
-  l.Caption := 'Click a device in the overview to open its panel';
+  l.SetBounds(242, 10, 200, 20);
+  l.Caption := 'Click a device to open its panel';
   l.Font.Style := [];
   l.Font.Color := clGrayText;
 
@@ -462,6 +464,8 @@ procedure TMainForm.TimerTick(Sender: TObject);
 var
   now: QWord;
   dt, d: Double;
+  key: string;
+  i: Integer;
 begin
   now := GetTickCount64;
   dt := (now - FLastTick) / 1000;
@@ -506,7 +510,6 @@ begin
     BtnReq.Caption := 'EXTERNAL REQUEST : OFF';
     BtnReq.SubText := 'click to request material';
   end;
-  BtnReq.Invalidate;
   if PlcMode then
     LblSim.Caption := Format('HMI time %s   PLC mode   events %d',
       [FmtTime(Sim.Time), Sim.EventCount])
@@ -523,9 +526,17 @@ begin
       LstEvents.TopIndex := LstEvents.Items.Count - 1;
   end;
 
-  if (Length(Sim.Pattern) + 1 <> GridPat.RowCount) or (PlcMode and not GridPat.EditorMode) then
+  { repaint the pattern grid only when something in it changed (no flicker) }
+  key := Format('%d|%d|', [Ord(Sim.PatternActive), Sim.PatStep]);
+  for i := 0 to High(Sim.Pattern) do
+    key := key + Format('%d%d%d:%.1f;', [Ord(Sim.Pattern[i].P[0]), Ord(Sim.Pattern[i].P[1]),
+      Ord(Sim.Pattern[i].P[2]), Sim.Pattern[i].Duration]);
+  if (key <> FLastGridKey) and not GridPat.EditorMode then
+  begin
+    FLastGridKey := key;
     FillGrid;
-  GridPat.Invalidate;
+    GridPat.Invalidate;
+  end;
   FOverview.Invalidate;
   RefreshDeviceForms;
   RefreshCharts;
@@ -650,8 +661,8 @@ var
 begin
   FUpdatingUI := True;
   try
-    CmbSource.ItemIndex := Ord(PlcMode);
-    CmbSpeed.Enabled := not PlcMode;
+    SegSource.ItemIndex := Ord(PlcMode);
+    SegSpeed.Enabled := not PlcMode;
     BtnConnect.Enabled := PlcMode;
     BtnConnect.Lamp := Link.Online and Sim.CommOK;
     if Link.Running then
@@ -697,7 +708,7 @@ end;
 procedure TMainForm.SourceChange(Sender: TObject);
 begin
   if FUpdatingUI then Exit;
-  if CmbSource.ItemIndex = 1 then
+  if SegSource.ItemIndex = 1 then
     SetDataSource(dsPLC)
   else
     SetDataSource(dsSimulation);
@@ -725,8 +736,8 @@ procedure TMainForm.SpeedChange(Sender: TObject);
 const
   SP: array[0..3] of Double = (1, 2, 5, 10);
 begin
-  if CmbSpeed.ItemIndex >= 0 then
-    FSpeed := SP[CmbSpeed.ItemIndex];
+  if SegSpeed.ItemIndex >= 0 then
+    FSpeed := SP[SegSpeed.ItemIndex];
 end;
 
 procedure TMainForm.DelayChange(Sender: TObject);

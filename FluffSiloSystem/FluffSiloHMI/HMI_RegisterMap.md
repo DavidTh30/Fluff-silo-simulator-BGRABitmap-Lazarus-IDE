@@ -21,7 +21,7 @@
 | `usim.pas` | เพิ่ม `Source` (Simulation/PLC), `StepExternal`, `ResetRuntime` |
 | `umain.pas` | เพิ่มกลุ่ม **PLC Connection** และส่งทุกปุ่มผ่าน `Hmi*` |
 | `udeviceform.pas` | ปุ่มของแต่ละอุปกรณ์ส่งผ่าน `Hmi*` (ใน PLC mode ปิดปุ่ม Simulate Fault) |
-| `FluffSiloHMI.ini` | สร้างอัตโนมัติข้างไฟล์ .exe เมื่อกด **Save & Apply** ใน Hardware Config |
+| `FluffSiloHMI.ini` | สร้างอัตโนมัติข้างไฟล์ .exe เมื่อกด **Apply** หรือ **Apply & Close** ใน Hardware Config |
 | `tools/plc_emulator.py` | PLC จำลอง (Modbus TCP server + S7 server ที่มี DB10, Python ล้วน) ใช้ทดสอบ HMI โดยไม่ต้องมี PLC จริง |
 | `tools/linktest.lpr` | โปรแกรมทดสอบอัตโนมัติ (console) ของส่วน PLC link |
 
@@ -43,7 +43,12 @@
      - S7: แก้คอลัมน์ **S7 Address** (address ที่ผิดรูปแบบจะเป็นตัวแดง)
      - ทั้งสองแบบแก้ Type / Scale / Use ได้ และใช้ **Show group** กรองตารางได้
    - กด **Test connection** เพื่อตรวจการเชื่อมต่อและอ่าน tag แรก
-   - กด **Save & Apply** เพื่อบันทึกลง `FluffSiloHMI.ini`
+   - บันทึกลง `FluffSiloHMI.ini` และใช้ค่าใหม่ทันที (ถ้า ONLINE อยู่ link จะเชื่อมต่อใหม่ด้วยค่าใหม่):
+     - **Apply** (หรือ **Ctrl+S**) — บันทึกแล้วอยู่หน้า Hardware Config ต่อ แก้ไขและกด Apply ซ้ำได้เรื่อย ๆ
+       มุมล่างจะแสดง `Applied hh:mm:ss` ของการบันทึกครั้งล่าสุด
+     - **Apply & Close** — บันทึกแล้วปิดหน้าต่าง
+     - **Close** — ปิดโดยไม่บันทึกสิ่งที่แก้หลังจากกด Apply ครั้งล่าสุด (สิ่งที่ Apply ไปแล้วยังอยู่)
+   - ถ้าข้อมูลไม่ถูกต้อง (เช่น address ผิดรูปแบบ) จะมีข้อความแจ้งและไม่บันทึกอะไรเลย
    - ทุก tag เก็บ address ไว้ทั้งแบบ Modbus และ S7 จึงสลับ protocol ไปมาได้โดยค่าที่ตั้งไว้ไม่หาย
 3. ที่กลุ่ม **PLC Connection** เลือก Data source = **PLC (Modbus TCP / S7)** แล้วกด **CONNECT**
    - หลอดไฟเขียวพร้อมข้อความ `ONLINE ... polls n` = สื่อสารปกติ

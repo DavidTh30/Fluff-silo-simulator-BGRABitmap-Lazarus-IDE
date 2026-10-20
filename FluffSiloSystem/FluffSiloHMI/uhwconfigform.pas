@@ -30,8 +30,9 @@ type
     BtnDb: TButton;
     GrpMap: TGroupBox;
     Grid: TStringGrid;
-    LblInfo: TLabel;
+    LblInfo, LblSaved: TLabel;
     Timer: TTimer;
+    FSaved: Boolean;   { saved at least once while the window was open }
     FRowTag: array of Integer;
     FCols: array of TColKind;
     procedure BuildUI;
@@ -47,7 +48,10 @@ type
     procedure DefaultsClick(Sender: TObject);
     procedure ImportClick(Sender: TObject);
     procedure ExportClick(Sender: TObject);
+    function DoSave: Boolean;
     procedure SaveClick(Sender: TObject);
+    procedure SaveCloseClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure DbClick(Sender: TObject);
     procedure FilterChange(Sender: TObject);
     procedure TimerTick(Sender: TObject);
@@ -71,7 +75,7 @@ var
 begin
   F := THwConfigForm.CreateCfg(Application);
   try
-    Result := F.ShowModal = mrOk;
+    Result := (F.ShowModal = mrOk) or F.FSaved;
   finally
     F.Free;
   end;
@@ -250,13 +254,25 @@ begin
   pRight := TPanel.Create(Self);
   pRight.Parent := pBtn;
   pRight.Align := alRight;
-  pRight.Width := 300;
+  pRight.Width := 440;
   pRight.BevelOuter := bvNone;
-  b := Btn(pRight, 6, 140, 'Save && Apply', @SaveClick);
+  b := Btn(pRight, 6, 130, 'Apply', @SaveClick);
+  b.Hint := 'Save and apply, keep this window open (Ctrl+S)';
+  b.ShowHint := True;
+  b := Btn(pRight, 146, 150, 'Apply && Close', @SaveCloseClick);
   b.Default := True;
-  b := Btn(pRight, 156, 130, 'Cancel', nil);
+  b := Btn(pRight, 306, 126, 'Close', nil);
+  b.Hint := 'Close without saving the changes made after the last Apply';
+  b.ShowHint := True;
   b.ModalResult := mrCancel;
   b.Cancel := True;
+  LblSaved := TLabel.Create(Self);
+  LblSaved.Parent := pBtn;
+  LblSaved.SetBounds(420, 14, 160, 20);
+  LblSaved.Font.Color := $00009000;
+  LblSaved.Caption := '';
+  KeyPreview := True;
+  OnKeyDown := @FormKeyDown;
 
   { ---------- tag table ---------- }
   GrpMap := TGroupBox.Create(Self);
@@ -730,12 +746,17 @@ begin
   end;
 end;
 
-procedure THwConfigForm.SaveClick(Sender: TObject);
+{ validates, applies and writes the configuration; False = nothing was applied }
+function THwConfigForm.DoSave: Boolean;
 var
   cfg: TPlcSettings;
   err: TStringList;
   wasRunning: Boolean;
 begin
+  Result := False;
+  { commit a cell that is still being edited }
+  if Grid.EditorMode then
+    Grid.EditorMode := False;
   ReadSettings(cfg);
   GridToTags;
   err := TStringList.Create;
@@ -766,7 +787,29 @@ begin
   Sim.Log(-1, True, 'Hardware Config saved (' + ProtocolName(cfg.Protocol) + '): ' + ConfigFileName);
   if wasRunning then
     Link.Start;
-  ModalResult := mrOk;
+  FSaved := True;
+  Result := True;
+end;
+
+procedure THwConfigForm.SaveClick(Sender: TObject);
+begin
+  if DoSave then
+    LblSaved.Caption := 'Applied ' + FormatDateTime('hh:nn:ss', Now);
+end;
+
+procedure THwConfigForm.SaveCloseClick(Sender: TObject);
+begin
+  if DoSave then
+    ModalResult := mrOk;
+end;
+
+procedure THwConfigForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key = Ord('S')) and (Shift = [ssCtrl]) then
+  begin
+    Key := 0;
+    SaveClick(Sender);
+  end;
 end;
 
 end.
