@@ -1,0 +1,42 @@
+// =============================================================================
+// Fluff Silo System 2 - S7-1200
+// FC "FC_StepBlocked" : Paddle Patterns helper
+//   A step is blocked when it needs paddles and none of them can run
+//   (fault / E-Stop / disabled / manual stop / not installed).
+//   A pause step (mask 0) is never blocked. Interlock does not block a step
+//   (same as the simulator).
+// =============================================================================
+FUNCTION "FC_StepBlocked" : Bool
+TITLE = 'Pattern step blocked'
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Mask : Int;                       // bit0 = Paddle01 .. bit6 = Paddle07
+      Available : Array[0..6] of Bool;  // paddle can run
+   END_VAR
+
+   VAR_TEMP
+      w : Word;
+      bit : Word;
+      k : Int;
+   END_VAR
+
+
+BEGIN
+	#w := INT_TO_WORD(#Mask) AND W#16#007F;
+	IF #w = W#16#0000 THEN
+	    #FC_StepBlocked := FALSE;   // pause step
+	    RETURN;
+	END_IF;
+
+	#FC_StepBlocked := TRUE;
+	#bit := W#16#0001;
+	FOR #k := 0 TO 6 DO
+	    IF ((#w AND #bit) <> W#16#0000) AND #Available[#k] THEN
+	        #FC_StepBlocked := FALSE;
+	        RETURN;
+	    END_IF;
+	    #bit := SHL(IN := #bit, N := 1);
+	END_FOR;
+
+END_FUNCTION

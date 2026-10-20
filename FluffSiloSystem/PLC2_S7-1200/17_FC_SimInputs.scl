@@ -1,0 +1,51 @@
+// =============================================================================
+// Fluff Silo System 2 - S7-1200
+// FC "FC_SimInputs" : simulation input mode
+//   Called FIRST in OB1. While "DB_Sim".SimMode = TRUE the field inputs in the
+//   process image (%I) are overwritten with the bits written into DB_Sim, so the
+//   rest of the program sees the simulator instead of the terminals.
+//   The CPU re-reads the terminals at the start of the next scan, so nothing
+//   is kept when SimMode is switched off.
+//
+//   Selector (panel: LEFT = SelLeft 1 / SelRight 0, RIGHT = SelLeft 0 / SelRight 1)
+//     PB_AutoStart (NO) := SelLeft          LEFT  -> rising edge = Auto Start
+//     PB_AutoStop  (NC) := NOT SelRight     RIGHT -> 0 = Auto Stop
+//   Both bits 0 (writer not connected yet) = no command.
+//
+//   WARNING: in SimMode the program ignores the real E-Stop input (%I0.0).
+//   Use it only on a bench CPU or PLCSIM Advanced; the hardware safety relay
+//   must still cut the contactors on a real machine.
+// =============================================================================
+FUNCTION "FC_SimInputs" : Void
+TITLE = 'Simulation inputs'
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+
+BEGIN
+	IF "DB_Sim".SimMode THEN
+	    "EStop_OK" := "DB_Sim".EStop;
+	    "PB_AutoStart" := "DB_Sim".SelLeft;
+	    "PB_AutoStop" := NOT "DB_Sim".SelRight;
+	    "PB_Reset" := "DB_Sim".Reset;
+	    "ExtRequest_In" := "DB_Sim".ExtRequest;
+	    "Blower01_FB" := "DB_Sim".Blower01_FB;
+	    "Blower01_OL" := "DB_Sim".Blower01_OL;
+	    "Screw01_FB" := "DB_Sim".Screw01_FB;
+	    "Screw01_OL" := "DB_Sim".Screw01_OL;
+	    "Paddle01_FB" := "DB_Sim".Paddle01_FB;
+	    "Paddle01_OL" := "DB_Sim".Paddle01_OL;
+	    "Paddle02_FB" := "DB_Sim".Paddle02_FB;
+	    "Paddle02_OL" := "DB_Sim".Paddle02_OL;
+	    "Paddle03_FB" := "DB_Sim".Paddle03_FB;
+	    "Paddle03_OL" := "DB_Sim".Paddle03_OL;
+	    "Paddle04_FB" := "DB_Sim".Paddle04_FB;
+	    "Paddle04_OL" := "DB_Sim".Paddle04_OL;
+	    "Paddle05_FB" := "DB_Sim".Paddle05_FB;
+	    "Paddle05_OL" := "DB_Sim".Paddle05_OL;
+	    "Paddle06_FB" := "DB_Sim".Paddle06_FB;
+	    "Paddle06_OL" := "DB_Sim".Paddle06_OL;
+	    "Paddle07_FB" := "DB_Sim".Paddle07_FB;
+	    "Paddle07_OL" := "DB_Sim".Paddle07_OL;
+	END_IF;
+
+END_FUNCTION

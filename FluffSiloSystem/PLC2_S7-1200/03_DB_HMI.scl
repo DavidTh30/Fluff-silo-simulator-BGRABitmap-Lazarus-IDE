@@ -1,0 +1,106 @@
+// =============================================================================
+// Fluff Silo System 2 - S7-1200  (FluffSilo HMI2: Blower01, Screw01, Paddle01..07)
+// DB "DB_HMI"  (set block number = 10 after generating the block!)
+// Interface to FluffSilo HMI2 (Siemens S7 / PUT-GET).
+//   * Standard access (NOT optimized) - the HMI uses absolute offsets
+//   * Retentive: parameters (delays, paddles installed, Paddle Patterns) survive power loss
+//   * PLC Properties: "Permit access with PUT/GET communication" = ON
+//
+// Byte map (must match the HMI2 default S7 map, see README / docs/HMI2_RegisterMap.md):
+//   DBX0.0  .. DBX17.7  Dev[0..8]        device status, 2 bytes per device
+//   DBX18.0 .. DBX18.3  Sys              AutoMode, ExtRequest, PatternActive, EStop
+//   DBX20.0 .. DBX20.4  Cmd              AutoStart, AutoStop, EStop, ResetEStop, ExtRequest
+//   DBX22.0 .. DBX30.7  DevCmd[0..71]    device commands, index = device*8 + command
+//   DBW32   .. DBW42    Delay[0..5]      0.1 s
+//   DBW44 / 46 / 48     Proc             CurrentStep, StepElapsed (0.1 s), SiloLevel (0.1 %)
+//   DBW52               Cfg.PaddleCount  paddles installed 1..7
+//   DBW56               Pattern.StepCount 0..20
+//   DBW58   .. DBW96    Pattern.Mask[0..19]      bit0 = Paddle01 .. bit6 = Paddle07, 0 = pause
+//   DBW98   .. DBW136   Pattern.StepTime[0..19]  0.1 s
+//   size 138 bytes
+// Devices: 0 = Blower01, 1 = Screw01, 2..8 = Paddle01..07
+// Device commands: 0 ManualStart, 1 ManualStop, 2 ReturnAuto, 3 Enable, 4 Disable, 5 ResetFault
+// HMI command bits are cleared by the PLC after one scan (except Cmd.ExtRequest).
+// =============================================================================
+DATA_BLOCK "DB_HMI"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+   STRUCT
+      Dev : Array[0..8] of "typeDevStatus";   // DBB0..17   PLC -> HMI
+      Sys : Struct                             // DBB18      PLC -> HMI
+         AutoMode : Bool;                      // DBX18.0 Auto Start mode active
+         ExtRequest : Bool;                    // DBX18.1 External Request (input OR HMI)
+         PatternActive : Bool;                 // DBX18.2 Paddle Patterns running
+         EStop : Bool;                         // DBX18.3 E-Stop latched
+      END_STRUCT;
+      Cmd : Struct                             // DBB20      HMI -> PLC
+         AutoStart : Bool;                     // DBX20.0 pulse
+         AutoStop : Bool;                      // DBX20.1 pulse
+         EStop : Bool;                         // DBX20.2 pulse (HMI E-Stop, additional to hardware E-Stop)
+         ResetEStop : Bool;                    // DBX20.3 pulse
+         ExtRequest : Bool;                    // DBX20.4 maintained 1/0
+      END_STRUCT;
+      DevCmd : Array[0..71] of Bool;           // DBB22..30  HMI -> PLC, [device*8 + command], pulses
+      Delay : Array[0..5] of Int;              // DBW32..42  HMI <-> PLC, 0.1 s
+                                               //   [0] Blower -> Screw start      (70 = 7.0 s)
+                                               //   [1] External Request hold      (30)
+                                               //   [2] Screw -> Paddle Patterns   (30)
+                                               //   [3] Request lost -> Screw stop (30)
+                                               //   [4] Screw stopped -> Blower stop (50)
+                                               //   [5] Auto Stop -> Blower stop   (50)
+      Proc : Struct                            // DBW44..50  PLC -> HMI
+         CurrentStep : Int;                    // DBW44 active pattern step 1..20, 0 = none
+         StepElapsed : Int;                    // DBW46 0.1 s
+         SiloLevel : Int;                      // DBW48 0.1 %
+         Spare : Int;                          // DBW50
+      END_STRUCT;
+      Cfg : Struct                             // DBW52..54  HMI <-> PLC
+         PaddleCount : Int;                    // DBW52 paddles installed 1..7
+         Spare : Int;                          // DBW54
+      END_STRUCT;
+      Pattern : Struct                         // DBW56..136 HMI <-> PLC
+         StepCount : Int;                      // DBW56 0..20
+         Mask : Array[0..19] of Int;           // DBW58..96
+         StepTime : Array[0..19] of Int;       // DBW98..136 0.1 s
+      END_STRUCT;
+   END_STRUCT;
+
+
+BEGIN
+   Delay[0] := 70;
+   Delay[1] := 30;
+   Delay[2] := 30;
+   Delay[3] := 30;
+   Delay[4] := 50;
+   Delay[5] := 50;
+   Cfg.PaddleCount := 7;
+   Pattern.StepCount := 14;
+   Pattern.Mask[0] := 1;
+   Pattern.Mask[2] := 2;
+   Pattern.Mask[4] := 4;
+   Pattern.Mask[6] := 8;
+   Pattern.Mask[8] := 16;
+   Pattern.Mask[10] := 32;
+   Pattern.Mask[12] := 64;
+   Pattern.StepTime[0] := 80;
+   Pattern.StepTime[1] := 20;
+   Pattern.StepTime[2] := 80;
+   Pattern.StepTime[3] := 20;
+   Pattern.StepTime[4] := 80;
+   Pattern.StepTime[5] := 20;
+   Pattern.StepTime[6] := 80;
+   Pattern.StepTime[7] := 20;
+   Pattern.StepTime[8] := 80;
+   Pattern.StepTime[9] := 20;
+   Pattern.StepTime[10] := 80;
+   Pattern.StepTime[11] := 20;
+   Pattern.StepTime[12] := 80;
+   Pattern.StepTime[13] := 20;
+   Pattern.StepTime[14] := 50;
+   Pattern.StepTime[15] := 50;
+   Pattern.StepTime[16] := 50;
+   Pattern.StepTime[17] := 50;
+   Pattern.StepTime[18] := 50;
+   Pattern.StepTime[19] := 50;
+
+END_DATA_BLOCK

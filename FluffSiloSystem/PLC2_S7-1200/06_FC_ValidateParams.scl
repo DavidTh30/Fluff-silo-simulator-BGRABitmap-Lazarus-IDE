@@ -1,0 +1,43 @@
+// =============================================================================
+// Fluff Silo System 2 - S7-1200
+// FC "FC_ValidateParams" : clamp parameters written by the HMI into DB_HMI
+//   delays          0 .. 6000  (0 .. 600.0 s)
+//   paddles         1 .. 7
+//   step count      0 .. 20
+//   step mask       0 .. 127   (bit0 = Paddle01 .. bit6 = Paddle07)
+//                   bits of paddles that are not installed are cleared
+//   step time       5 .. 6000  (0.5 .. 600.0 s)
+// =============================================================================
+FUNCTION "FC_ValidateParams" : Void
+TITLE = 'Clamp HMI parameters'
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_TEMP
+      i : Int;
+      pow : Int;
+      used : Word;    // mask of the installed paddles
+   END_VAR
+
+
+BEGIN
+	FOR #i := 0 TO 5 DO
+	    "DB_HMI".Delay[#i] := LIMIT(MN := 0, IN := "DB_HMI".Delay[#i], MX := 6000);
+	END_FOR;
+
+	"DB_HMI".Cfg.PaddleCount := LIMIT(MN := 1, IN := "DB_HMI".Cfg.PaddleCount, MX := 7);
+	// 1 paddle = 2#1, 7 paddles = 2#111_1111 (= 2^PaddleCount - 1)
+	#pow := 1;
+	FOR #i := 1 TO "DB_HMI".Cfg.PaddleCount DO
+	    #pow := #pow * 2;
+	END_FOR;
+	#used := INT_TO_WORD(#pow - 1);
+
+	"DB_HMI".Pattern.StepCount := LIMIT(MN := 0, IN := "DB_HMI".Pattern.StepCount, MX := 20);
+
+	FOR #i := 0 TO 19 DO
+	    "DB_HMI".Pattern.Mask[#i] := WORD_TO_INT(INT_TO_WORD(LIMIT(MN := 0, IN := "DB_HMI".Pattern.Mask[#i], MX := 127))
+	                                             AND #used);
+	    "DB_HMI".Pattern.StepTime[#i] := LIMIT(MN := 5, IN := "DB_HMI".Pattern.StepTime[#i], MX := 6000);
+	END_FOR;
+
+END_FUNCTION

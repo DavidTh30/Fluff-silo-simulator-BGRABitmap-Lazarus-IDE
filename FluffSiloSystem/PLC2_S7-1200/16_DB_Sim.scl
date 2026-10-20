@@ -1,0 +1,65 @@
+// =============================================================================
+// Fluff Silo System 2 - S7-1200
+// DB "DB_Sim"  (set block number = 11 after generating the block!)
+// Simulation inputs written by a client panel / test tool (S7 PUT).
+//   * Standard access (NOT optimized) - the writer uses absolute offsets
+//   * NON_RETAIN: SimMode returns to FALSE after every restart / power cycle
+//   * FC_SimInputs copies these bits to %I only while SimMode = TRUE
+//   * DBX0.0 .. DBX1.6 are the same as DB_Sim of PLC_S7-1200 (FluffSilo Client Panel)
+//
+// Byte map:
+//   DBX0.0  EStop        -> %I0.0 EStop_OK       1 = E-Stop pulled (OK)
+//   DBX0.1  SelLeft      -> %I0.1 PB_AutoStart   selector LEFT  = Auto Start
+//   DBX0.2  SelRight     -> %I0.2 PB_AutoStop    selector RIGHT = Auto Stop (inverted, NC)
+//   DBX0.3  Reset        -> %I0.3 PB_Reset
+//   DBX0.4  ExtRequest   -> %I0.4 ExtRequest_In
+//   DBX0.5  Blower01_FB  -> %I0.5      DBX0.6  Blower01_OL  -> %I0.6
+//   DBX0.7  Screw01_FB   -> %I0.7      DBX1.0  Screw01_OL   -> %I1.0
+//   DBX1.1  Paddle01_FB  -> %I1.1      DBX1.2  Paddle01_OL  -> %I1.2
+//   DBX1.3  Paddle02_FB  -> %I1.3      DBX1.4  Paddle02_OL  -> %I1.4
+//   DBX1.5  Paddle03_FB  -> %I1.5      DBX1.6  Paddle03_OL  -> %I8.0
+//   DBX1.7  Paddle04_FB  -> %I8.1      DBX2.0  Paddle04_OL  -> %I8.2
+//   DBX2.1  Paddle05_FB  -> %I8.3      DBX2.2  Paddle05_OL  -> %I8.4
+//   DBX2.3  Paddle06_FB  -> %I8.5      DBX2.4  Paddle06_OL  -> %I8.6
+//   DBX2.5  Paddle07_FB  -> %I8.7      DBX2.6  Paddle07_OL  -> %I9.0
+//   DBX2.7  Spare
+//   DBX3.0  SimMode      1 = simulation active (set from Watch table / HMI)
+// Size: 4 bytes
+// =============================================================================
+DATA_BLOCK "DB_Sim"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+   STRUCT
+      EStop : Bool;          // DBX0.0  E-Stop: 1 = pulled (chain OK), 0 = pressed
+      SelLeft : Bool;        // DBX0.1  selector LEFT  (Auto Start)
+      SelRight : Bool;       // DBX0.2  selector RIGHT (Auto Stop)
+      Reset : Bool;          // DBX0.3  Reset push button
+      ExtRequest : Bool;     // DBX0.4  External Request switch
+      Blower01_FB : Bool;    // DBX0.5  running feedback
+      Blower01_OL : Bool;    // DBX0.6  overload OK (1 = OK)
+      Screw01_FB : Bool;     // DBX0.7
+      Screw01_OL : Bool;     // DBX1.0
+      Paddle01_FB : Bool;    // DBX1.1
+      Paddle01_OL : Bool;    // DBX1.2
+      Paddle02_FB : Bool;    // DBX1.3
+      Paddle02_OL : Bool;    // DBX1.4
+      Paddle03_FB : Bool;    // DBX1.5
+      Paddle03_OL : Bool;    // DBX1.6
+      Paddle04_FB : Bool;    // DBX1.7
+      Paddle04_OL : Bool;    // DBX2.0
+      Paddle05_FB : Bool;    // DBX2.1
+      Paddle05_OL : Bool;    // DBX2.2
+      Paddle06_FB : Bool;    // DBX2.3
+      Paddle06_OL : Bool;    // DBX2.4
+      Paddle07_FB : Bool;    // DBX2.5
+      Paddle07_OL : Bool;    // DBX2.6
+      Spare_2_7 : Bool;      // DBX2.7  keeps SimMode on its own byte
+      SimMode : Bool;        // DBX3.0  1 = copy DB_Sim to %I every scan
+   END_STRUCT;
+
+
+BEGIN
+   SimMode := FALSE;
+
+END_DATA_BLOCK
