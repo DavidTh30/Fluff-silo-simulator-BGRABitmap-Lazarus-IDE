@@ -1,0 +1,10 @@
+# FluffSilo HMI2 Paddle Pattern - two paddles together, 6 s + 2 s pause
+Step;Paddle01;Paddle02;Paddle03;Paddle04;Paddle05;Paddle06;Paddle07;Time_s
+1;1;1;0;0;0;0;0;6.0
+2;0;0;0;0;0;0;0;2.0
+3;0;0;1;1;0;0;0;6.0
+4;0;0;0;0;0;0;0;2.0
+5;0;0;0;0;1;1;0;6.0
+6;0;0;0;0;0;0;0;2.0
+7;0;0;0;0;0;0;1;6.0
+8;0;0;0;0;0;0;0;2.0

@@ -1,0 +1,18 @@
+2026-10-21 19:23:50.241	00:00:00.0	-1	1	FluffSilo HMI2 started - config C:\Users\MS\Desktop\FluffSiloSystem\FluffSiloHMI2\FluffSiloHMI2.ini
+2026-10-21 19:23:50.500	00:00:00.1	1	1	Blower01.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	11	1	Screw01.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	12	1	Screw01.Interlock = ON
+2026-10-21 19:23:50.500	00:00:00.1	21	1	Paddle01.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	22	1	Paddle01.Interlock = ON
+2026-10-21 19:23:50.500	00:00:00.1	31	1	Paddle02.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	32	1	Paddle02.Interlock = ON
+2026-10-21 19:23:50.500	00:00:00.1	41	1	Paddle03.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	42	1	Paddle03.Interlock = ON
+2026-10-21 19:23:50.500	00:00:00.1	51	1	Paddle04.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	52	1	Paddle04.Interlock = ON
+2026-10-21 19:23:50.500	00:00:00.1	61	1	Paddle05.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	62	1	Paddle05.Interlock = ON
+2026-10-21 19:23:50.500	00:00:00.1	71	1	Paddle06.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	72	1	Paddle06.Interlock = ON
+2026-10-21 19:23:50.500	00:00:00.1	81	1	Paddle07.Auto Stop = ON
+2026-10-21 19:23:50.500	00:00:00.1	82	1	Paddle07.Interlock = ON
